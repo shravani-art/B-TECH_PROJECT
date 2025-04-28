@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Skin Analysis Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        img {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+            margin-bottom: 20px;
+            max-width: 100%;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        a:hover {
+            background-color: #45a049;
+        }
+        .result-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .issue-item {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #e9e9e9;
+            border-radius: 3px;
+        }
+        .confidence {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h2>Skin Analysis Result</h2>
+    
+    <div class="result-section">
+        <img src="{{ image_url }}" alt="Analyzed Skin Image">
+    </div>
+    
+    <div class="result-section">
+        <h3>Skin Type: {{ skin_condition }}</h3>
+    </div>
+    
+    <div class="result-section">
+        <h3>Detected Skin Issues:</h3>
+        {% if skin_issues %}
+            {% for issue in skin_issues %}
+                <div class="issue-item">
+                    {{ issue.label }} - 
+                    <span class="confidence">{{ issue.confidence }}% confidence</span>
+                    (Detected at position: {{ issue.position.x }}, {{ issue.position.y }})
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No specific skin issues detected.</p>
+        {% endif %}
+    </div>
+    
+    <a href="/">Back to Upload</a>
+</body>
+</html>
