@@ -11,8 +11,23 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
 
+
 # Load and preprocess the product dataset
 product_df = pd.read_csv("final_cleaned.csv")
+
+# Fill missing values
+product_df.fillna('', inplace=True)
+
+# Prepare skin type and concern binarization
+product_df['Skin Type'] = product_df['Skin Type'].str.lower().str.strip()
+product_df['Skin Concerns'] = product_df['Skin Concerns'].apply(lambda x: [i.strip().lower() for i in str(x).split(',')])
+
+mlb = MultiLabelBinarizer()
+concern_vectors = mlb.fit_transform(product_df['Skin Concerns'])
+
+# Create combined feature matrix
+skin_type_vector = pd.get_dummies(product_df['Skin Type'])
+combined_vectors = pd.concat([pd.DataFrame(skin_type_vector), pd.DataFrame(concern_vectors)], axis=1).values
 
 # Define upload and output folders
 UPLOAD_FOLDER = 'uploads'
@@ -80,7 +95,7 @@ def detect_skin_issues(image_path):
     except Exception as e:
         print(f"Detection error: {str(e)}")
         return []
-        
+
 def recommend_products(skin_type, issues):
     try:
         # Build user profile
@@ -105,6 +120,7 @@ def recommend_products(skin_type, issues):
     except Exception as e:
         print(f"Recommendation error: {e}")
         return []
+
 
 @app.route('/')
 def home():
@@ -136,12 +152,16 @@ def predict():
         Image.open(upload_path).save(output_path)
 
         recommended_products = recommend_products(skin_condition, skin_issues)
+       
+        
 
+        # Final response with recommendations (✅ MODIFY THIS LINE)
         return render_template("result.html",
                              image_url=f'/output/{image_id}/output.jpg',
                              skin_condition=skin_condition,
                              skin_issues=skin_issues,
                              recommendations=recommended_products)
+    
 
     except Exception as e:
         print(f"Prediction error: {str(e)}")
@@ -153,6 +173,8 @@ def serve_output(image_id, filename):
         return send_from_directory(os.path.join(OUTPUT_FOLDER, image_id), filename)
     except FileNotFoundError:
         return "Image not found", 404
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
