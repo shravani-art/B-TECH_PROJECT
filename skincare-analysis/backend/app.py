@@ -10,7 +10,48 @@ from PIL import Image
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
+from dotenv import load_dotenv
+import google.generativeai as genai
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Gemini API setup
+try:
+    GEMINI_API_KEY = os.getenv('GOOGLE_API_KEY')
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY is not set. Please set the GOOGLE_API_KEY environment variable.")
+    genai.configure(api_key=GEMINI_API_KEY)
+    gemini_model = genai.GenerativeModel('gemini-2.0-flash')
+except Exception as e:
+    print(f"Gemini setup error: {e}")
+    gemini_model = None
+
+def generate_skincare_routine(skin_type, skin_issues, age, gender):
+    if not gemini_model:
+        return "Gemini model not available. Please check configuration."
+    try:
+        issues_list = [issue['label'] for issue in skin_issues]
+        prompt = f"""Based on the following skin analysis:
+        Age: {age} years
+        Gender: {gender}
+        Skin Type: {skin_type}
+        Skin Concerns: {', '.join(issues_list)}
+
+        Please provide a detailed skincare routine including:
+        1. Morning routine
+        2. Evening routine
+        3. Weekly treatments
+        4. Lifestyle recommendations
+
+        Consider the person's age and gender in your recommendations.
+        Format the response in a clear, structured way with bullet points."""
+
+        response = gemini_model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"Error generating skincare routine: {str(e)}")
+        return "Unable to generate skincare routine at this time."
 
 # Load and preprocess the product dataset
 product_df = pd.read_csv("final_cleaned.csv")
@@ -133,8 +174,15 @@ def predict():
 
     try:
         image = request.files['image']
+        age = request.form.get('age', type=int)
+        gender = request.form.get('gender', '').lower()
+
         if image.filename == '':
             return jsonify({'error': 'No selected file'}), 400
+        
+        if not age or not gender:
+            return jsonify({'error': 'Age and gender are required'}), 400
+
 
         # Save uploaded image
         image_id = str(uuid.uuid4())
@@ -144,6 +192,8 @@ def predict():
         # Get predictions
         skin_condition = classify_skin(upload_path)
         skin_issues = detect_skin_issues(upload_path)
+        # Generate skincare routine with age and gender
+        skincare_routine = generate_skincare_routine(skin_condition, skin_issues, age, gender)
 
         # Copy original image to output for display
         output_dir = os.path.join(OUTPUT_FOLDER, image_id)
@@ -152,16 +202,16 @@ def predict():
         Image.open(upload_path).save(output_path)
 
         recommended_products = recommend_products(skin_condition, skin_issues)
-       
-        
 
-        # Final response with recommendations (✅ MODIFY THIS LINE)
+        # Final response with recommendations
         return render_template("result.html",
                              image_url=f'/output/{image_id}/output.jpg',
                              skin_condition=skin_condition,
                              skin_issues=skin_issues,
-                             recommendations=recommended_products)
-    
+                             recommendations=recommended_products,
+                             skincare_routine=skincare_routine,
+                             age=age,
+                             gender=gender)
 
     except Exception as e:
         print(f"Prediction error: {str(e)}")
@@ -173,7 +223,6 @@ def serve_output(image_id, filename):
         return send_from_directory(os.path.join(OUTPUT_FOLDER, image_id), filename)
     except FileNotFoundError:
         return "Image not found", 404
-
 
 
 if __name__ == '__main__':

@@ -90,6 +90,18 @@
             <p>No specific skin issues detected.</p>
         {% endif %}
     </div>
+    <div class="result-section">
+        <h3>Personalized Skincare Routine:</h3>
+        <div style="white-space: pre-line; background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-top: 10px;">
+            {{ skincare_routine }}
+        </div>
+    </div>
+
+    <div class="result-section">
+        <h3>User Information:</h3>
+        <p>Age: {{ age }} years</p>
+        <p>Gender: {{ gender | capitalize }}</p>
+    </div>
 
     <h3>Recommended Products:</h3>
 {% if recommendations %}

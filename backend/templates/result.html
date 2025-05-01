@@ -1,0 +1,38 @@
+    <div class="result-section">
+        <h3>Recommended Products:</h3>
+        {% if recommendations %}
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                {% for product in recommendations %}
+                    <div style="width: 200px; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                        <img src="{{ product['Image URL'] }}" alt="Product Image" width="100%" height="150" style="object-fit: cover; border-radius: 6px;">
+                        <h4 style="margin: 10px 0 5px 0; font-size: 16px;">{{ product['Product Name'] }}</h4>
+                        <p style="margin: 0; color: #666;">by {{ product['Brand'] }}</p>
+                        <p style="font-weight: bold; color: #333;">₹{{ product['Price'] }}</p>
+                        <a href="{{ product['Product Link'] }}" target="_blank" style="display: inline-block; margin-top: 5px; text-decoration: none; color: white; background-color: #007bff; padding: 5px 10px; border-radius: 4px;">View Product</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No suitable product recommendations found.</p>
+        {% endif %}
+    </div>
+
+    <div class="result-section">
+        <h3>Personalized Skincare Routine:</h3>
+        <div style="white-space: pre-line; background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-top: 10px;">
+            {{ skincare_routine }}
+        </div>
+    </div>
+
+    <div class="result-section">
+        <h3>User Information:</h3>
+        <p>Age: {{ age }} years</p>
+        <p>Gender: {{ gender | capitalize }}</p>
+    </div>
+
+    <div class="result-section">
+        <h3>Detected Skin Type:</h3>
+        <p>{{ skin_condition | capitalize }}</p>
+    </div>
+
+    <a class="button" href="/">Analyze Another Image</a> 
