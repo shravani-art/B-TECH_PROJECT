@@ -28,13 +28,13 @@ ROBOFLOW_MODEL_ID = "my-first-project-y0u0j/3"
 DETECTION_LABELS = ['Acne', 'Dark Circle', 'Dark spot', 'Eyebag', 'Mole', 'Redness', 'Wrinkles', 'freckles', 'whiteheads']
 
 # Skin type classification setup
-NUM_CLASSES = 2
-SKIN_TYPE_LABELS = ['dry', 'oily']
+NUM_CLASSES = 3
+SKIN_TYPE_LABELS = ['dry', 'oily' , 'normal']
 
 # Load ResNet50 model
 resnet = models.resnet50(pretrained=False)
 resnet.fc = torch.nn.Linear(resnet.fc.in_features, NUM_CLASSES)
-resnet.load_state_dict(torch.load('resnet50_best_skin_classifier.pth', map_location='cpu'))
+resnet.load_state_dict(torch.load('resnet50_best_three_class.pth', map_location='cpu'))
 resnet.eval()
 
 def classify_skin(image_path):
