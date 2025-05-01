@@ -7,6 +7,12 @@ import torch
 import torchvision.models as models
 from torchvision import transforms
 from PIL import Image
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MultiLabelBinarizer
+
+# Load and preprocess the product dataset
+product_df = pd.read_csv("final_cleaned.csv")
 
 # Define upload and output folders
 UPLOAD_FOLDER = 'uploads'
@@ -74,6 +80,31 @@ def detect_skin_issues(image_path):
     except Exception as e:
         print(f"Detection error: {str(e)}")
         return []
+        
+def recommend_products(skin_type, issues):
+    try:
+        # Build user profile
+        skin_vector = [0] * len(skin_type_vector.columns)
+        if skin_type in skin_type_vector.columns:
+            skin_vector[skin_type_vector.columns.get_loc(skin_type)] = 1
+
+        issue_vector = [0] * len(mlb.classes_)
+        for issue in issues:
+            issue = issue['label'].lower()
+            if issue in mlb.classes_:
+                issue_vector[list(mlb.classes_).index(issue)] = 1
+
+        user_vector = skin_vector + issue_vector
+
+        # Compute cosine similarity
+        similarities = cosine_similarity([user_vector], combined_vectors)[0]
+        product_df['score'] = similarities
+        top_products = product_df.sort_values(by='score', ascending=False).head(50)
+
+        return top_products[['Label', 'Product Name', 'Brand', 'Price', 'Product Link','Image URL']].to_dict(orient='records')
+    except Exception as e:
+        print(f"Recommendation error: {e}")
+        return []
 
 @app.route('/')
 def home():
@@ -104,10 +135,13 @@ def predict():
         output_path = os.path.join(output_dir, "output.jpg")
         Image.open(upload_path).save(output_path)
 
+        recommended_products = recommend_products(skin_condition, skin_issues)
+
         return render_template("result.html",
                              image_url=f'/output/{image_id}/output.jpg',
                              skin_condition=skin_condition,
-                             skin_issues=skin_issues)
+                             skin_issues=skin_issues,
+                             recommendations=recommended_products)
 
     except Exception as e:
         print(f"Prediction error: {str(e)}")
