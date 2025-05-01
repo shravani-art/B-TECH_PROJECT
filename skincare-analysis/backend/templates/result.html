@@ -5,12 +5,13 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background-color: #f5f5f5;
         }
-        h2 {
+        h2, h3 {
             color: #333;
             border-bottom: 2px solid #4CAF50;
             padding-bottom: 10px;
@@ -22,7 +23,7 @@
             margin-bottom: 20px;
             max-width: 100%;
         }
-        a {
+        a.button {
             display: inline-block;
             margin-top: 20px;
             padding: 8px 16px;
@@ -31,24 +32,34 @@
             text-decoration: none;
             border-radius: 4px;
         }
-        a:hover {
+        a.button:hover {
             background-color: #45a049;
         }
         .result-section {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             padding: 15px;
-            background-color: #f9f9f9;
+            background-color: #fff;
             border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
         }
-        .issue-item {
-            margin: 5px 0;
-            padding: 8px;
+        .issue-item, .product-item {
+            margin: 10px 0;
+            padding: 10px;
             background-color: #e9e9e9;
-            border-radius: 3px;
+            border-radius: 4px;
         }
         .confidence {
             font-weight: bold;
             color: #4CAF50;
+        }
+        .product-item img {
+            width: 100px;
+            height: auto;
+            float: right;
+            margin-left: 10px;
+        }
+        .product-info {
+            overflow: hidden;
         }
     </style>
 </head>
@@ -56,11 +67,13 @@
     <h2>Skin Analysis Result</h2>
     
     <div class="result-section">
+        <h3>Analyzed Image:</h3>
         <img src="{{ image_url }}" alt="Analyzed Skin Image">
     </div>
-    
+
     <div class="result-section">
-        <h3>Skin Type: {{ skin_condition }}</h3>
+        <h3>Detected Skin Type:</h3>
+        <p>{{ skin_condition | capitalize }}</p>
     </div>
     
     <div class="result-section">
@@ -68,16 +81,37 @@
         {% if skin_issues %}
             {% for issue in skin_issues %}
                 <div class="issue-item">
-                    {{ issue.label }} - 
-                    <span class="confidence">{{ issue.confidence }}% confidence</span>
-                    (Detected at position: {{ issue.position.x }}, {{ issue.position.y }})
+                    <strong>{{ issue.label }}</strong> - 
+                    <span class="confidence">{{ issue.confidence }}%</span> confidence<br>
+                    (Detected at position: X={{ issue.position.x }}, Y={{ issue.position.y }})
                 </div>
             {% endfor %}
         {% else %}
             <p>No specific skin issues detected.</p>
         {% endif %}
     </div>
+
+    <h3>Recommended Products:</h3>
+{% if recommendations %}
+    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        {% for product in recommendations %}
+            <div style="width: 200px; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                <img src="{{ product['Image URL'] }}" alt="Product Image" width="100%" height="150" style="object-fit: cover; border-radius: 6px;">
+                <h4 style="margin: 10px 0 5px 0; font-size: 16px;">{{ product['Product Name'] }}</h4>
+                <p style="margin: 0; color: #666;">by {{ product['Brand'] }}</p>
+                <p style="font-weight: bold; color: #333;">₹{{ product['Price'] }}</p>
+                <a href="{{ product['Product Link'] }}" target="_blank" style="display: inline-block; margin-top: 5px; text-decoration: none; color: white; background-color: #007bff; padding: 5px 10px; border-radius: 4px;">View Product</a>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No suitable product recommendations found.</p>
+{% endif %}
+
+
     
-    <a href="/">Back to Upload</a>
+
+    <a class="button" href="/">Analyze Another Image</a>
+   
 </body>
 </html>
