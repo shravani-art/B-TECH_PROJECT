@@ -6,7 +6,7 @@ import uuid
 import torch
 import torchvision.models as models
 from torchvision import transforms
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -32,19 +32,28 @@ def generate_skincare_routine(skin_type, skin_issues, age, gender):
         return "Gemini model not available. Please check configuration."
     try:
         issues_list = [issue['label'] for issue in skin_issues]
-        prompt = f"""Based on the following skin analysis:
-        Age: {age} years
-        Gender: {gender}
-        Skin Type: {skin_type}
-        Skin Concerns: {', '.join(issues_list)}
+        prompt = f"""
+Generate a simple and effective skincare routine based on the following details:
 
-        Please provide a detailed skincare routine including:
-        1. Morning routine
-        2. Evening routine
-        3. Weekly treatments
-        4. Lifestyle recommendations
+- Age: {age}
+- Gender: {gender}
+- Skin Type: {skin_type}
+- Skin Concerns: {', '.join(issues_list)}
 
-        Consider the person's age and gender in your recommendations.
+**Morning Routine**
+• [suggest basic steps]
+
+**Evening Routine**
+• [suggest basic steps]
+
+**Weekly Care**
+• [mention 1-2 treatments]
+
+**Lifestyle Tips**
+• [simple advice related to age and gender]
+
+Keep the tone friendly and the suggestions short and easy to follow.
+
         Format the response in a clear, structured way with bullet points."""
 
         response = gemini_model.generate_content(prompt)
@@ -54,34 +63,36 @@ def generate_skincare_routine(skin_type, skin_issues, age, gender):
         return "Unable to generate skincare routine at this time."
 
 # Load and preprocess the product dataset
-product_df = pd.read_csv("final_cleaned.csv")
-
-# Fill missing values
+product_df = pd.read_csv("product-data.csv")
 product_df.fillna('', inplace=True)
 
-# Prepare skin type and concern binarization
+#-----------
+print("Unique Genders:", product_df['Gender'].unique())
+print("Unique Ages:", product_df['Age'].unique())
+#-------------
+
+# Clean columns
 product_df['Skin Type'] = product_df['Skin Type'].str.lower().str.strip()
 product_df['Skin Concerns'] = product_df['Skin Concerns'].apply(lambda x: [i.strip().lower() for i in str(x).split(',')])
+product_df['Gender'] = product_df['Gender'].str.lower().str.strip()
+product_df['Age'] = product_df['Age'].str.strip()
 
 mlb = MultiLabelBinarizer()
 concern_vectors = mlb.fit_transform(product_df['Skin Concerns'])
 
-# Create combined feature matrix
 skin_type_vector = pd.get_dummies(product_df['Skin Type'])
 combined_vectors = pd.concat([pd.DataFrame(skin_type_vector), pd.DataFrame(concern_vectors)], axis=1).values
 
-# Define upload and output folders
+# Upload/output folders
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
-
-# Create folders if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
 CORS(app)
 
-# Roboflow client setup
+# Roboflow setup
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
     api_key="gmIokv6xUEW8cJPv4C1Q"
@@ -89,11 +100,9 @@ CLIENT = InferenceHTTPClient(
 ROBOFLOW_MODEL_ID = "my-first-project-y0u0j/3"
 DETECTION_LABELS = ['Acne', 'Dark Circle', 'Dark spot', 'Eyebag', 'Mole', 'Redness', 'Wrinkles', 'freckles', 'whiteheads']
 
-# Skin type classification setup
+# Skin type classification
 NUM_CLASSES = 3
-SKIN_TYPE_LABELS = ['dry', 'oily' , 'normal']
-
-# Load ResNet50 model
+SKIN_TYPE_LABELS = ['dry', 'oily', 'normal']
 resnet = models.resnet50(pretrained=False)
 resnet.fc = torch.nn.Linear(resnet.fc.in_features, NUM_CLASSES)
 resnet.load_state_dict(torch.load('resnet50_best_three_class.pth', map_location='cpu'))
@@ -101,10 +110,7 @@ resnet.eval()
 
 def classify_skin(image_path):
     try:
-        transform = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor()
-        ])
+        transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
         image = Image.open(image_path).convert('RGB')
         input_tensor = transform(image).unsqueeze(0)
         with torch.no_grad():
@@ -119,49 +125,78 @@ def detect_skin_issues(image_path):
     try:
         result = CLIENT.infer(image_path, model_id=ROBOFLOW_MODEL_ID)
         detections = []
-        
+        image = Image.open(image_path).convert("RGB")
+        draw = ImageDraw.Draw(image)
+        font = ImageFont.load_default()
+
         for prediction in result.get('predictions', []):
             class_id = prediction.get('class_id', -1)
             if 0 <= class_id < len(DETECTION_LABELS):
+                label = DETECTION_LABELS[class_id]
+                confidence = round(prediction.get('confidence', 0) * 100, 2)
+                x = prediction.get('x', 0)
+                y = prediction.get('y', 0)
+                width = prediction.get('width', 0)
+                height = prediction.get('height', 0)
+
+                left = int(x - width / 2)
+                top = int(y - height / 2)
+                right = int(x + width / 2)
+                bottom = int(y + height / 2)
+
+                draw.rectangle([left, top, right, bottom], outline="red", width=2)
+                draw.text((left, top - 10), f"{label} ({confidence}%)", fill="red", font=font)
+
                 detections.append({
-                    'label': DETECTION_LABELS[class_id],
-                    'confidence': round(prediction.get('confidence', 0) * 100, 2),
+                    'label': label,
+                    'confidence': confidence,
                     'position': {
-                        'x': round(prediction.get('x', 0)),
-                        'y': round(prediction.get('y', 0))
+                        'x': round(x), 'y': round(y),
+                        'width': round(width), 'height': round(height)
                     }
                 })
-        
+
+        image.save(image_path)
         return detections
     except Exception as e:
         print(f"Detection error: {str(e)}")
         return []
 
-def recommend_products(skin_type, issues):
+def recommend_products(skin_type, issues, user_age, user_gender):
     try:
-        # Build user profile
+        # Vectorize user profile
         skin_vector = [0] * len(skin_type_vector.columns)
         if skin_type in skin_type_vector.columns:
             skin_vector[skin_type_vector.columns.get_loc(skin_type)] = 1
 
         issue_vector = [0] * len(mlb.classes_)
         for issue in issues:
-            issue = issue['label'].lower()
-            if issue in mlb.classes_:
-                issue_vector[list(mlb.classes_).index(issue)] = 1
+            label = issue['label'].lower()
+            if label in mlb.classes_:
+                issue_vector[list(mlb.classes_).index(label)] = 1
 
         user_vector = skin_vector + issue_vector
 
         # Compute cosine similarity
         similarities = cosine_similarity([user_vector], combined_vectors)[0]
         product_df['score'] = similarities
+
+        # Filter top 50 by similarity
         top_products = product_df.sort_values(by='score', ascending=False).head(50)
 
-        return top_products[['Label', 'Product Name', 'Brand', 'Price', 'Product Link','Image URL']].to_dict(orient='records')
+        # Filter by exact match of gender and age
+        filtered_products = top_products[
+    ((top_products['Gender'].str.lower() == user_gender) | (top_products['Gender'].str.lower() == 'unisex')) &
+    (top_products['Age'].str.strip() == user_age)
+]
+
+
+        return filtered_products[['Label', 'Product Name', 'Brand', 'Price', 'Product Link', 'Image URL']].to_dict(orient='records')
+        print("Filtered Products Found:", len(filtered_products))
+
     except Exception as e:
         print(f"Recommendation error: {e}")
         return []
-
 
 @app.route('/')
 def home():
@@ -174,44 +209,45 @@ def predict():
 
     try:
         image = request.files['image']
-        age = request.form.get('age', type=int)
-        gender = request.form.get('gender', '').lower()
-
         if image.filename == '':
             return jsonify({'error': 'No selected file'}), 400
-        
-        if not age or not gender:
-            return jsonify({'error': 'Age and gender are required'}), 400
-
 
         # Save uploaded image
         image_id = str(uuid.uuid4())
         upload_path = os.path.join(UPLOAD_FOLDER, f"{image_id}.jpg")
         image.save(upload_path)
 
-        # Get predictions
+        # Get form inputs
+        user_gender = request.form.get("gender", "").strip().lower()
+        user_age = request.form.get("age", "").strip()
+        
+
+        # Run predictions
         skin_condition = classify_skin(upload_path)
         skin_issues = detect_skin_issues(upload_path)
         # Generate skincare routine with age and gender
-        skincare_routine = generate_skincare_routine(skin_condition, skin_issues, age, gender)
+        skincare_routine = generate_skincare_routine(skin_condition, skin_issues, user_age, user_gender)
 
-        # Copy original image to output for display
+        # Save output image
         output_dir = os.path.join(OUTPUT_FOLDER, image_id)
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, "output.jpg")
         Image.open(upload_path).save(output_path)
+        
+        #-------------
+        print("User Selected Gender:", user_gender)
+        print("User Selected Age:", user_age)
+        #-------------
 
-        recommended_products = recommend_products(skin_condition, skin_issues)
+        # Get recommendations
+        recommended_products = recommend_products(skin_condition, skin_issues, user_age, user_gender)
 
-        # Final response with recommendations
         return render_template("result.html",
-                             image_url=f'/output/{image_id}/output.jpg',
-                             skin_condition=skin_condition,
-                             skin_issues=skin_issues,
-                             recommendations=recommended_products,
-                             skincare_routine=skincare_routine,
-                             age=age,
-                             gender=gender)
+                               image_url=f'/output/{image_id}/output.jpg',
+                               skin_condition=skin_condition,
+                               skin_issues=skin_issues,
+                               recommendations=recommended_products,
+                               skincare_routine=skincare_routine,)
 
     except Exception as e:
         print(f"Prediction error: {str(e)}")
@@ -223,7 +259,6 @@ def serve_output(image_id, filename):
         return send_from_directory(os.path.join(OUTPUT_FOLDER, image_id), filename)
     except FileNotFoundError:
         return "Image not found", 404
-
 
 if __name__ == '__main__':
     app.run(debug=True)
