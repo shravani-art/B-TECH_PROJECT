@@ -132,7 +132,7 @@ def detect_skin_issues(image_path):
         for prediction in result.get('predictions', []):
             class_id = prediction.get('class_id', -1)
             if 0 <= class_id < len(DETECTION_LABELS):
-                label = DETECTION_LABELS[class_id]
+                label = DETECTION_LABELS[class_id - 1]
                 confidence = round(prediction.get('confidence', 0) * 100, 2)
                 x = prediction.get('x', 0)
                 y = prediction.get('y', 0)
@@ -148,7 +148,7 @@ def detect_skin_issues(image_path):
                 draw.text((left, top - 10), f"{label} ({confidence}%)", fill="red", font=font)
 
                 detections.append({
-                    'label': label,
+                    'label': DETECTION_LABELS[class_id - 1],
                     'confidence': confidence,
                     'position': {
                         'x': round(x), 'y': round(y),
