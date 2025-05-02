@@ -204,42 +204,57 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if 'image' not in request.files:
-        return jsonify({'error': 'No image uploaded'}), 400
+    import base64
+    from io import BytesIO
 
     try:
-        image = request.files['image']
-        if image.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
+        # Get inputs
+        image = request.files.get('image')
+        captured_data = request.form.get('captured_image')  # base64 from webcam
 
-        # Save uploaded image
+        if not image and not captured_data:
+            return jsonify({'error': 'No image uploaded or captured'}), 400
+
+        # Save image
         image_id = str(uuid.uuid4())
         upload_path = os.path.join(UPLOAD_FOLDER, f"{image_id}.jpg")
-        image.save(upload_path)
+
+        if image and image.filename != '':
+            image.save(upload_path)
+        elif captured_data:
+            try:
+                header, encoded = captured_data.split(',', 1)
+                binary_data = base64.b64decode(encoded)
+                img = Image.open(BytesIO(binary_data))
+                img.save(upload_path)
+            except Exception as e:
+                print(f"Error decoding captured image: {e}")
+                return jsonify({'error': 'Failed to process captured image'}), 500
+        else:
+            return jsonify({'error': 'No valid image input'}), 400
 
         # Get form inputs
         user_gender = request.form.get("gender", "").strip().lower()
         user_age = request.form.get("age", "").strip()
-        
 
         # Run predictions
         skin_condition = classify_skin(upload_path)
         skin_issues = detect_skin_issues(upload_path)
-        # Generate skincare routine with age and gender
+
+        # Generate skincare routine
         skincare_routine = generate_skincare_routine(skin_condition, skin_issues, user_age, user_gender)
 
-        # Save output image
+        # Save output image with bounding boxes
         output_dir = os.path.join(OUTPUT_FOLDER, image_id)
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, "output.jpg")
         Image.open(upload_path).save(output_path)
-        
-        #-------------
+
+        # Log for debugging
         print("User Selected Gender:", user_gender)
         print("User Selected Age:", user_age)
-        #-------------
 
-        # Get recommendations
+        # Recommend products
         recommended_products = recommend_products(skin_condition, skin_issues, user_age, user_gender)
 
         return render_template("result.html",
@@ -247,7 +262,7 @@ def predict():
                                skin_condition=skin_condition,
                                skin_issues=skin_issues,
                                recommendations=recommended_products,
-                               skincare_routine=skincare_routine,)
+                               skincare_routine=skincare_routine)
 
     except Exception as e:
         print(f"Prediction error: {str(e)}")
