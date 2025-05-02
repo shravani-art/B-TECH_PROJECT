@@ -4,68 +4,98 @@
     <title>Skin Analysis Result</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
-            background-color: #f5f5f5;
+            background-color: #e9f2fb;
         }
+
         h2, h3 {
-            color: #333;
-            border-bottom: 2px solid #4CAF50;
+            color: #2a588a;
+            border-bottom: 2px solid #000000;
             padding-bottom: 10px;
         }
+
         img {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 5px;
+            border: 1px solid #c6d6e8;
+            border-radius: 6px;
+            padding: 4px;
             margin-bottom: 20px;
             max-width: 100%;
         }
+
         a.button {
             display: inline-block;
             margin-top: 20px;
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
+            padding: 10px 18px;
+            background-color: white;
+            color: rgb(33, 56, 102);
             text-decoration: none;
-            border-radius: 4px;
+            border-radius: 6px;
+            border: 2px solid #003366;
+            font-weight: bold;
         }
+
         a.button:hover {
-            background-color: #45a049;
-        }
+    background-color: white;
+    color: #003366; /* navy blue */
+    border: 2px solid #003366;
+}
+
         .result-section {
             margin-bottom: 30px;
-            padding: 15px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.1);
         }
+
         .issue-item, .product-item {
             margin: 10px 0;
-            padding: 10px;
-            background-color: #e9e9e9;
-            border-radius: 4px;
+            padding: 12px;
+            background-color: #dceaff;
+            border-radius: 5px;
         }
+
         .confidence {
             font-weight: bold;
-            color: #4CAF50;
+            color: #2a588a;
         }
+
         .product-item img {
             width: 100px;
             height: auto;
             float: right;
             margin-left: 10px;
         }
+
         .product-info {
             overflow: hidden;
         }
+        .view-button {
+    display: inline-block;
+    margin-top: 5px;
+    text-decoration: none;
+    color: #1e3c78;
+    background-color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 2px solid #003366;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.view-button:hover {
+    background-color: #003366;
+    color: white;
+}
     </style>
 </head>
 <body>
     <h2>Skin Analysis Result</h2>
-    
+
     <div class="result-section">
         <h3>Analyzed Image:</h3>
         <img src="{{ image_url }}" alt="Analyzed Skin Image">
@@ -75,7 +105,7 @@
         <h3>Detected Skin Type:</h3>
         <p>{{ skin_condition | capitalize }}</p>
     </div>
-    
+
     <div class="result-section">
         <h3>Detected Skin Issues:</h3>
         {% if skin_issues %}
@@ -83,45 +113,40 @@
                 <div class="issue-item">
                     <strong>{{ issue.label }}</strong> - 
                     <span class="confidence">{{ issue.confidence }}%</span> confidence<br>
-                    (Detected at position: X={{ issue.position.x }}, Y={{ issue.position.y }})
+                    (Detected at: X={{ issue.position.x }}, Y={{ issue.position.y }}, Width={{ issue.position.width }}, Height={{ issue.position.height }})
                 </div>
             {% endfor %}
         {% else %}
             <p>No specific skin issues detected.</p>
         {% endif %}
     </div>
+
+    <div class="result-section">
+        <h3>Recommended Products:</h3>
+        {% if recommendations %}
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                {% for product in recommendations %}
+                    <div style="width: 220px; border: 1px solid #cbdff5; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1); background-color: #ffffff;">
+                        <img src="{{ product['Image URL'] }}" alt="Product Image" width="100%" height="150" style="object-fit: cover; border-radius: 6px;">
+                        <h4 style="margin: 10px 0 5px 0; font-size: 16px; color: #2a588a;">{{ product['Product Name'] }}</h4>
+                        <p style="margin: 0; color: #666;">by {{ product['Brand'] }}</p>
+                        <p style="font-weight: bold; color: #222;">₹{{ product['Price'] }}</p>
+                        <a href="{{ product['Product Link'] }}" target="_blank" class="view-button">View Product</a>
+
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No suitable product recommendations found.</p>
+        {% endif %}
+    </div>
+
     <div class="result-section">
         <h3>Personalized Skincare Routine:</h3>
-        <div style="white-space: pre-line; background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-top: 10px;">
+        <div style="white-space: pre-line; background-color: #f0f7ff; padding: 20px; border-radius: 6px; margin-top: 10px; color: #333;">
             {{ skincare_routine }}
         </div>
     </div>
-
-    <div class="result-section">
-        <h3>User Information:</h3>
-        <p>Age: {{ age }} years</p>
-        <p>Gender: {{ gender | capitalize }}</p>
-    </div>
-
-    <h3>Recommended Products:</h3>
-{% if recommendations %}
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-        {% for product in recommendations %}
-            <div style="width: 200px; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-                <img src="{{ product['Image URL'] }}" alt="Product Image" width="100%" height="150" style="object-fit: cover; border-radius: 6px;">
-                <h4 style="margin: 10px 0 5px 0; font-size: 16px;">{{ product['Product Name'] }}</h4>
-                <p style="margin: 0; color: #666;">by {{ product['Brand'] }}</p>
-                <p style="font-weight: bold; color: #333;">₹{{ product['Price'] }}</p>
-                <a href="{{ product['Product Link'] }}" target="_blank" style="display: inline-block; margin-top: 5px; text-decoration: none; color: white; background-color: #007bff; padding: 5px 10px; border-radius: 4px;">View Product</a>
-            </div>
-        {% endfor %}
-    </div>
-{% else %}
-    <p>No suitable product recommendations found.</p>
-{% endif %}
-
-
-    
 
     <a class="button" href="/">Analyze Another Image</a>
 </body>
