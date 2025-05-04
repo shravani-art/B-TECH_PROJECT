@@ -27,6 +27,14 @@ except Exception as e:
     print(f"Gemini setup error: {e}")
     gemini_model = None
 
+df = pd.read_csv("product-data.csv")
+
+brands = sorted(df['Brand'].dropna().unique())
+labels = sorted(df['Label'].dropna().unique())
+
+print("Brands:", brands)
+print("Labels:", labels)
+
 def generate_skincare_routine(skin_type, skin_issues, age, gender):
     if not gemini_model:
         return "Gemini model not available. Please check configuration."
