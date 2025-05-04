@@ -39,10 +39,10 @@
         }
 
         a.button:hover {
-    background-color: white;
-    color: #003366; /* navy blue */
-    border: 2px solid #003366;
-}
+            background-color: white;
+            color: #003366;
+            border: 2px solid #003366;
+        }
 
         .result-section {
             margin-bottom: 30px;
@@ -74,23 +74,43 @@
         .product-info {
             overflow: hidden;
         }
-        .view-button {
-    display: inline-block;
-    margin-top: 5px;
-    text-decoration: none;
-    color: #1e3c78;
-    background-color: #ffffff;
-    padding: 6px 12px;
-    border-radius: 4px;
-    border: 2px solid #003366;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
 
-.view-button:hover {
-    background-color: #003366;
-    color: white;
-}
+        .view-button {
+            display: inline-block;
+            margin-top: 5px;
+            text-decoration: none;
+            color: #1e3c78;
+            background-color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 2px solid #003366;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .view-button:hover {
+            background-color: #003366;
+            color: white;
+        }
+
+        #filters label {
+            margin-right: 20px;
+        }
+
+        #filters select {
+            padding: 6px;
+            margin-left: 5px;
+        }
+
+        .product-card {
+            width: 220px;
+            border: 1px solid #cbdff5;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+            background-color: #ffffff;
+        }
+
     </style>
 </head>
 <body>
@@ -124,18 +144,49 @@
     <div class="result-section">
         <h3>Recommended Products:</h3>
         {% if recommendations %}
-            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                {% for product in recommendations %}
-                    <div style="width: 220px; border: 1px solid #cbdff5; border-radius: 10px; padding: 12px; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1); background-color: #ffffff;">
-                        <img src="{{ product['Image URL'] }}" alt="Product Image" width="100%" height="150" style="object-fit: cover; border-radius: 6px;">
-                        <h4 style="margin: 10px 0 5px 0; font-size: 16px; color: #2a588a;">{{ product['Product Name'] }}</h4>
-                        <p style="margin: 0; color: #666;">by {{ product['Brand'] }}</p>
-                        <p style="font-weight: bold; color: #222;">₹{{ product['Price'] }}</p>
-                        <a href="{{ product['Product Link'] }}" target="_blank" class="view-button">View Product</a>
+        <div id="filters" style="margin-bottom: 20px;">
+            <label>Price Range:
+                <select id="priceFilter">
+                    <option value="">All</option>
+                    <option value="0-500">Under ₹500</option>
+                    <option value="500-1000">₹500 - ₹1000</option>
+                    <option value="1000-5000">₹1000 - ₹5000</option>
+                </select>
+            </label>
 
-                    </div>
-                {% endfor %}
-            </div>
+            <label>Brand:
+                <select id="brandFilter">
+                    <option value="">All</option>
+                    {% for brand in recommendations | map(attribute='Brand') | unique %}
+                        <option value="{{ brand }}">{{ brand }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label>Label:
+                <select id="labelFilter">
+                    <option value="">All</option>
+                    {% for label in recommendations | map(attribute='Label') | unique %}
+                        <option value="{{ label }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+
+        <div id="productContainer" style="display: flex; flex-wrap: wrap; gap: 20px;">
+            {% for product in recommendations %}
+                <div class="product-card" 
+                     data-price="{{ product['Price'] | replace(',', '') | replace('₹', '') }}" 
+                     data-brand="{{ product['Brand'] }}" 
+                     data-label="{{ product['Label'] }}">
+                    <img src="{{ product['Image URL'] }}" alt="Product Image" width="100%" height="150" style="object-fit: cover; border-radius: 6px;">
+                    <h4 style="margin: 10px 0 5px 0; font-size: 16px; color: #2a588a;">{{ product['Product Name'] }}</h4>
+                    <p style="margin: 0; color: #666;">by {{ product['Brand'] }}</p>
+                    <p style="font-weight: bold; color: #222;">{{ product['Price'] }}</p>
+                    <a href="{{ product['Product Link'] }}" target="_blank" class="view-button">View Product</a>
+                </div>
+            {% endfor %}
+        </div>
         {% else %}
             <p>No suitable product recommendations found.</p>
         {% endif %}
@@ -149,5 +200,40 @@
     </div>
 
     <a class="button" href="/">Analyze Another Image</a>
+
+    <script>
+        const priceFilter = document.getElementById('priceFilter');
+        const brandFilter = document.getElementById('brandFilter');
+        const labelFilter = document.getElementById('labelFilter');
+        const productCards = document.querySelectorAll('.product-card');
+
+        function filterProducts() {
+            const priceVal = priceFilter.value;
+            const brandVal = brandFilter.value.toLowerCase();
+            const labelVal = labelFilter.value.toLowerCase();
+
+            productCards.forEach(card => {
+                const price = parseFloat(card.getAttribute('data-price'));
+                const brand = card.getAttribute('data-brand').toLowerCase();
+                const label = card.getAttribute('data-label').toLowerCase();
+
+                let show = true;
+
+                if (priceVal) {
+                    const [min, max] = priceVal.split('-').map(Number);
+                    if (price < min || price > max) show = false;
+                }
+
+                if (brandVal && brand !== brandVal) show = false;
+                if (labelVal && label !== labelVal) show = false;
+
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        priceFilter.addEventListener('change', filterProducts);
+        brandFilter.addEventListener('change', filterProducts);
+        labelFilter.addEventListener('change', filterProducts);
+    </script>
 </body>
 </html>
