@@ -12,6 +12,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MultiLabelBinarizer
 from dotenv import load_dotenv
 import google.generativeai as genai
+import markdown
 
 # Load environment variables from .env file
 load_dotenv()
@@ -27,14 +28,6 @@ except Exception as e:
     print(f"Gemini setup error: {e}")
     gemini_model = None
 
-df = pd.read_csv("product-data.csv")
-
-brands = sorted(df['Brand'].dropna().unique())
-labels = sorted(df['Label'].dropna().unique())
-
-print("Brands:", brands)
-print("Labels:", labels)
-
 def generate_skincare_routine(skin_type, skin_issues, age, gender):
     if not gemini_model:
         return "Gemini model not available. Please check configuration."
@@ -48,16 +41,16 @@ Generate a simple and effective skincare routine based on the following details:
 - Skin Type: {skin_type}
 - Skin Concerns: {', '.join(issues_list)}
 
-**Morning Routine**
+•Morning Routine
 • [suggest basic steps]
 
-**Evening Routine**
+•Evening Routine
 • [suggest basic steps]
 
-**Weekly Care**
+•Weekly Care
 • [mention 1-2 treatments]
 
-**Lifestyle Tips**
+•Lifestyle Tips
 • [simple advice related to age and gender]
 
 Keep the tone friendly and the suggestions short and easy to follow.
@@ -65,7 +58,9 @@ Keep the tone friendly and the suggestions short and easy to follow.
         Format the response in a clear, structured way with bullet points."""
 
         response = gemini_model.generate_content(prompt)
-        return response.text
+        routine_markdown = response.text
+        routine_html = markdown.markdown(routine_markdown)
+        return routine_html
     except Exception as e:
         print(f"Error generating skincare routine: {str(e)}")
         return "Unable to generate skincare routine at this time."
@@ -115,6 +110,10 @@ resnet = models.resnet50(pretrained=False)
 resnet.fc = torch.nn.Linear(resnet.fc.in_features, NUM_CLASSES)
 resnet.load_state_dict(torch.load('resnet50_best_three_class.pth', map_location='cpu'))
 resnet.eval()
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 def classify_skin(image_path):
     try:
