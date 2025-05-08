@@ -2,169 +2,659 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skincare Analyzer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
 
     <style>
-        body {
-            font-family: 'Merriweather Sans','Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to right, #e0f0ff, #cde3f7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .container {
-    background-color: #ffffff;
-    padding: 40px 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.1);
-    text-align: center;
-    width: 600px; /* increased width */
-}
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #e0f0ff, #cde3f7);
+            color: #333;
+            line-height: 1.6;
+        }
 
+        /* Header Styles */
+        header {
+            background-color: #003366;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
 
-        h1 {
-            color: #2a588a;
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin-left: 25px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 16px;
+        }
+
+        nav ul li a:hover {
+            color: #aad4f7;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .login-btn {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .signup-btn {
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .signup-btn:hover {
+            background-color: #1976d2;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #0057a8, #004385);
+            padding: 80px 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cta-button:hover {
+            background-color: #1976d2;
+            transform: translateY(-2px);
+        }
+
+        /* Main content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 20px;
+        }
+        .features {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 80px;
+        }
+
+        .feature-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 51, 102, 0.08);
+            padding: 30px;
+            width: calc(33.333% - 20px);
+            margin-bottom: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 51, 102, 0.12);
+        }
+
+        .feature-icon {
+            background-color: #e6f2ff;
+            color: #0057a8;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .feature-card h3 {
+            color: #003366;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 15px;
+        }
+        /* Analyzer Section */
+        .analyzer-section {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 51, 102, 0.1);
+            padding: 40px;
+            margin-bottom: 50px;
+        }
+
+        .analyzer-section h2 {
+            color: #003366;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .analyzer-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.08);
+            width: 100%;
+        }
+
+        /* Form styling */
+        .analyzer-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .capture-options {
+            display: flex;
+            gap: 30px;
             margin-bottom: 25px;
         }
 
-        input[type="file"],
-        select,
-        input[type="number"] {
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #aad4f7;
-            margin-bottom: 20px;
+        .upload-option, .camera-option {
+            flex: 1;
+            background-color: #f8fbff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0, 51, 102, 0.05);
+        }
+
+        .option-label {
+            color: #003366;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        input[type="file"] {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #c8e1fd;
+            background-color: white;
             width: 100%;
             font-size: 14px;
         }
 
-        button {
-    background-color: #ffffff;
-    color: #003366;
-    border: 2px solid #003366;
-    padding: 12px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 100%;
+        video {
+            width: 100%;
+            border-radius: 8px;
+            background-color: #edf5ff;
+            margin-bottom: 15px;
+        }
 
-    transition: all 0.3s ease;
-}
+        .preview-area {
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+        }
 
-button:hover {
-    background-color: #003366;
-    color: white;
-}
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.1);
+        }
 
-        @media (max-width: 400px) {
-            .container {
-                width: 90%;
-                padding: 20px;
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        select {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #c8e1fd;
+            background-color: white;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .submit-btn {
+            background-color: #0057a8;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #003f7d;
+        }
+
+        .camera-button {
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .camera-button i {
+            margin-right: 8px;
+        }
+
+        .camera-button:hover {
+            background-color: #1976d2;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #003366;
+            color: white;
+            padding: 40px 0 20px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .footer-column {
+            width: 23%;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background-color: #1e88e5;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-column ul li a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #1e88e5;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .footer-column {
+                width: 48%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+            .capture-options {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .footer-column {
+                width: 100%;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Skincare Analyzer</h1>
-        <form method="POST" action="/predict" enctype="multipart/form-data" id="uploadForm">
-            <div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 20px;">
-                <!-- File upload -->
-                <div style="flex: 1;">
-                    <label for="fileInput">Upload from device:</label>
-                    <input type="file" id="fileInput" name="image" accept="image/*" onchange="previewImage(event)">
-                </div>
-        
-                <!-- Camera capture -->
-                <div style="flex: 1;">
-                    <label>Take a photo:</label>
-                    <video id="video" width="100%" autoplay playsinline style="border-radius: 8px; margin-top: 10px;"></video><br>
-                    <button type="button" onclick="capturePhoto()" style="margin: 10px 0;">Capture Photo</button>
-                </div>
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <span style="position: relative; display: inline-block; margin-right: 12px;">
+                    <i class="fa-solid fa-square-plus" style="color: white; font-size: 30px;"></i>
+                    
+                </span>
+                Skincare Analyzer
             </div>
-        
-            <!-- Hidden inputs -->
-            <canvas id="canvas" style="display: none;"></canvas>
-            <input type="hidden" name="captured_image" id="capturedImageInput">
-        
-            <!-- Preview -->
-            <img id="preview" style="display:none; width: 100%; margin-bottom: 20px; border-radius: 8px;" alt="Image Preview" />
-        
-            <!-- Gender and Age -->
-            <select name="gender" required>
-                <option value="" disabled selected>Select Gender</option>
-                <option value="men">Men</option>
-                <option value="women">Women</option>
-                <option value="unisex">Unisex</option>
-            </select>
-        
-            <select name="age" required>
-                <option value="" disabled selected>Select Age</option>
-                <option value="13+">13+</option>
-                <option value="25+">25+</option>
-                <option value="45+">45+</option>
-            </select>
-        
-            <button type="submit">Upload Image</button>
-        </form>
-        
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>AI-Powered Skin Analysis</h1>
+            <p>Get personalized skincare recommendations based on your unique skin profile</p>
+            <a href="#analyzer"><button class="cta-button">Analyze Now</button></a>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Main Content -->
+    <div class="main-content">
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-microscope"></i>
+                </div>
+                <h3>Deep Analysis</h3>
+                <p>Our AI identifies skin conditions, concerns, and compatibility with ingredients with high accuracy.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3>Product Recommendtions</h3>
+                <p>Get tailored skincare products recommendations based on your unique skin profile and concerns.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <h3>Skincare Routine</h3>
+                <p>Get detailed skincare routine suggestions routine with steps, ingredients to look for, and how to use the products effectively.</p>
+            </div>
+        </div>
+
+        <!-- Skincare Analyzer Section -->
+        <div class="analyzer-section" id="analyzer">
+            <h2>Skincare Analyzer</h2>
+            <div class="analyzer-container">
+                <form method="POST" action="/predict" enctype="multipart/form-data" id="uploadForm" class="analyzer-form">
+                    <div class="capture-options">
+                        <!-- File upload -->
+                        <div class="upload-option">
+                            <label class="option-label"><i class="fas fa-upload"></i> Upload from device</label>
+                            <input type="file" id="fileInput" name="image" accept="image/*" onchange="previewImage(event)">
+                        </div>
+                
+                        <!-- Camera capture -->
+                        <div class="camera-option">
+                            <label class="option-label"><i class="fas fa-camera"></i> Take a photo</label>
+                            <video id="video" autoplay playsinline></video>
+                            <button type="button" class="camera-button" id="captureButton" onclick="capturePhoto()">
+                                <i class="fas fa-camera"></i> Capture Photo
+                            </button>
+                            <button type="button" class="camera-button" id="retakeButton" style="display: none; background-color: #f44336;" onclick="retakePhoto()">
+                                <i class="fas fa-redo"></i> Retake Photo
+                            </button>
+                        </div>
+                    </div>
+                
+                    <!-- Preview area -->
+                    <div class="preview-area">
+                        <img id="preview" style="display:none;" alt="Image Preview" />
+                    </div>
+                
+                    <!-- Hidden inputs -->
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <input type="hidden" name="captured_image" id="capturedImageInput">
+                
+                    <!-- Gender and Age -->
+                    <div class="form-row">
+                        <select name="gender" required>
+                            <option value="" disabled selected>Select Gender</option>
+                            <option value="men">Men</option>
+                            <option value="women">Women</option>
+                            <option value="unisex">Other</option>
+                        </select>
+                
+                        <select name="age" required>
+                            <option value="" disabled selected>Select Age</option>
+                            <option value="13+">13+</option>
+                            <option value="13+">25+</option>
+                            <option value="13+">45+</option>
+                        </select>
+                    </div>
+                
+                    <button type="submit" class="submit-btn">Upload Image</button>
+                </form>
+            </div>
+        </div>
     </div>
 
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Skincare Analyzer</h3>
+                <p>AI-powered skincare analysis and personalized recommendations to help you achieve your best skin ever.</p>
+            </div>
+            <div class="footer-column">
+                <h3>Links</h3>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Features</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Skin Guide</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Skincare Analyzer. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const preview = document.getElementById('preview');
-        const capturedInput = document.getElementById('capturedImageInput');
-        const fileInput = document.getElementById('fileInput');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+    const capturedInput = document.getElementById('capturedImageInput');
+    const fileInput = document.getElementById('fileInput');
+    const form = document.getElementById('uploadForm');
+    const captureButton = document.getElementById('captureButton');
+    const retakeButton = document.getElementById('retakeButton');
 
-        // Enable webcam
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                console.error("Webcam access error:", err);
-            });
+    // Enable webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error("Webcam access error:", err);
+        });
 
-        // Capture photo
-        function capturePhoto() {
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageDataURL = canvas.toDataURL('image/jpeg');
+    // Capture photo
+    function capturePhoto() {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataURL = canvas.toDataURL('image/jpeg');
 
-            // Set preview
-            preview.src = imageDataURL;
-            preview.style.display = 'block';
+        preview.src = imageDataURL;
+        preview.style.display = 'block';
+        capturedInput.value = imageDataURL;
+        fileInput.value = ""; // clear file input
 
-            // Clear file input if webcam used
-            fileInput.value = "";
+        // Hide video and show retake
+        video.style.display = 'none';
+        captureButton.style.display = 'none';
+        retakeButton.style.display = 'inline-block';
+    }
 
-            // Pass image data to hidden input
-            capturedInput.value = imageDataURL;
+    // Retake photo
+    function retakePhoto() {
+        video.style.display = 'block';
+        preview.style.display = 'none';
+        captureButton.style.display = 'inline-block';
+        retakeButton.style.display = 'none';
+        capturedInput.value = ""; // clear captured data
+    }
+
+    // Preview file upload
+    function previewImage(event) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                capturedInput.value = ""; // clear webcam data
+
+                // Hide video if visible
+                video.style.display = 'none';
+                if (captureButton) captureButton.style.display = 'none';
+                if (retakeButton) retakeButton.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(input.files[0]);
         }
+    }
 
-        // File upload preview
-        function previewImage(event) {
-            const input = event.target;
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    capturedInput.value = "";  // Clear captured image if file is used
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
+    // Enforce either file or camera input
+    form.addEventListener('submit', function (e) {
+        if (!fileInput.files.length && !capturedInput.value) {
+            e.preventDefault();
+            alert("Please upload a file or capture a photo before submitting.");
         }
+    });
     </script>
 </body>
-
-
-
 </html>
